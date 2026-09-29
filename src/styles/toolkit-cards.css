@@ -1,0 +1,102 @@
+.toolkit-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.toolkit-card {
+  min-width: 0;
+  padding: 25px 23px 27px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 98%, var(--ink));
+  transition: border-color .25s, box-shadow .25s;
+}
+
+.toolkit-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.toolkit-card__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--lime) 25%, var(--line));
+  border-radius: 11px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--lime) 14%, var(--paper));
+  transition: background .25s, color .25s;
+}
+
+.toolkit-card__number {
+  color: var(--ink-faint);
+  font: 12px var(--font-mono);
+}
+
+.toolkit-card h4 {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font: 500 22px/1.2 var(--font-heading);
+  letter-spacing: -.04em;
+}
+
+.toolkit-card .toolkit-card__description {
+  margin: 0 0 23px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.toolkit-card .toolkit-card__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 7px;
+  list-style: none;
+  margin: 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.toolkit-card__tools li {
+  margin: 0;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font: 400 12px/1.4 var(--font-body);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toolkit-card:hover {
+    border-color: color-mix(in srgb, var(--ink) 25%, var(--line));
+    box-shadow: 0 7px 22px color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+
+  .toolkit-card:hover .toolkit-card__icon {
+    color: #171915;
+    background: var(--lime);
+  }
+}
+
+@media (max-width: 1100px) {
+  .toolkit-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .toolkit-cards { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .toolkit-card { padding: 21px; }
+  .toolkit-card__top { margin-bottom: 18px; }
+  .toolkit-card .toolkit-card__description { margin-bottom: 18px; }
+  .toolkit-card .toolkit-card__tools { padding-top: 17px; }
+  .toolkit-card__tools li { font-size: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolkit-card, .toolkit-card__icon { transition: none; }
+}

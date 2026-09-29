@@ -1,13 +1,26 @@
 import path from "path";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+
+// Vite's SPA fallback otherwise serves the home document for extensionless URLs.
+const contactDocument = (request: IncomingMessage, _response: ServerResponse, next: () => void) => {
+  if (request.url && /^\/contact\/?(?:\?|$)/.test(request.url)) {
+    request.url = request.url.replace(/^\/contact\/?(?=\?|$)/, "/contact/index.html");
+  }
+  next();
+};
 
 export default defineConfig({
   server: {
     port: 3000,
     host: "0.0.0.0",
   },
-  plugins: [react()],
+  plugins: [react(), {
+    name: "contact-document",
+    configureServer(server) { server.middlewares.use(contactDocument); },
+    configurePreviewServer(server) { server.middlewares.use(contactDocument); },
+  }],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -30,6 +43,10 @@ export default defineConfig({
     cssCodeSplit: true,
     // Optimize chunk splitting for better caching
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        contact: path.resolve(__dirname, "contact/index.html"),
+      },
       output: {
         // Separate React into its own chunk for better caching
         manualChunks: {

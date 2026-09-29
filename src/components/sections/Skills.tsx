@@ -1,191 +1,61 @@
-import * as React from "react";
-import { useState } from "react";
-import { DownloadSimple } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, Plus } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import SectionFrame, { SectionLabel } from "../common/SectionFrame";
 import { EXPERIENCES } from "../../data";
+import ToolkitCards from "./ToolkitCards";
 
-const capabilityGroups = [
-  {
-    title: "Frontend systems",
-    skills: [
-      "React.js",
-      "Vite",
-      "TypeScript",
-      "JavaScript",
-      "HTML",
-      "CSS",
-      "Tailwind CSS",
-      "Bootstrap",
-    ],
-  },
-  {
-    title: "Backend and data",
-    skills: [
-      "Node.js",
-      "Express.js",
-      "REST APIs",
-      "PostgreSQL",
-      "Supabase",
-      "File workflows",
-    ],
-  },
-  {
-    title: "State and delivery",
-    skills: ["Zustand", "Redux", "Git", "GitHub", "Dokploy", "n8n", "Jira"],
-  },
-  {
-    title: "Design and AI workflow",
-    skills: [
-      "Figma",
-      "VS Code",
-      "Antigravity",
-      "Claude Code",
-      "Codex",
-      "Lovable.dev",
-      "Google Stitch",
-      "Google Flow",
-    ],
-  },
+const impacts = [
+  { value: "~50%", label: "less file storage", detail: "Encryption & compression workflows" },
+  { value: "35%", label: "faster initial load", detail: "Lazy loading, splitting & caching" },
+  { value: "React", label: "from the foundations", detail: "Interfaces, APIs & responsive systems" },
 ];
-
-const formatCompany = (company: string) =>
-  company
-    .toLowerCase()
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-
-const Skills: React.FC = () => {
-  const [activeExperience, setActiveExperience] = useState(0);
-  const reduceMotion = useReducedMotion();
-  const selectedExperience = EXPERIENCES[activeExperience];
-
-  const selectExperienceFromKeyboard = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ) => {
-    let nextIndex = index;
-
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-      nextIndex = (index + 1) % EXPERIENCES.length;
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-      nextIndex = (index - 1 + EXPERIENCES.length) % EXPERIENCES.length;
-    } else if (event.key === "Home") {
-      nextIndex = 0;
-    } else if (event.key === "End") {
-      nextIndex = EXPERIENCES.length - 1;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-    setActiveExperience(nextIndex);
-
-    const tabs = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-      '[role="tab"]',
-    );
-    tabs?.[nextIndex]?.focus();
-  };
-
-  return (
-    <div className="experience-section">
-      <div className="experience-section__inner">
-        <header className="experience-heading">
-          <div>
-            <h2>Work that shipped</h2>
-            <p>
-              Product engineering, performance work, and automation delivered
-              inside real teams.
-            </p>
-          </div>
-          <a
-            href="/Jothivasan_FullStackDeveloper_Resume.pdf"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Download résumé
-            <DownloadSimple size={18} weight="bold" aria-hidden="true" />
-          </a>
-        </header>
-
-        <div className="experience-workspace">
-          <section className="career-ledger" aria-label="Career history">
-            <div
-              className="career-ledger__tabs"
-              role="tablist"
-              aria-label="Choose an experience"
-            >
-              {EXPERIENCES.map((experience, index) => {
-                const isActive = index === activeExperience;
-
-                return (
-                  <button
-                    id={`experience-tab-${experience.id}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`experience-${experience.id}`}
-                    tabIndex={isActive ? 0 : -1}
-                    onClick={() => setActiveExperience(index)}
-                    onKeyDown={(event) =>
-                      selectExperienceFromKeyboard(event, index)
-                    }
-                    key={experience.id}
-                  >
-                    <strong>{formatCompany(experience.company)}</strong>
-                    <span>{experience.period}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.article
-                id={`experience-${selectedExperience.id}`}
-                className="career-ledger__detail"
-                role="tabpanel"
-                aria-labelledby={`experience-tab-${selectedExperience.id}`}
-                key={selectedExperience.id}
-                initial={reduceMotion ? false : { opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -10 }}
-                transition={{
-                  duration: reduceMotion ? 0 : 0.3,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <header>
-                  <span>{selectedExperience.period}</span>
-                  <h3>{selectedExperience.role}</h3>
-                  <p>{formatCompany(selectedExperience.company)}</p>
-                </header>
-
-                <ul>
-                  {selectedExperience.description.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </motion.article>
-            </AnimatePresence>
-          </section>
-
-          <section className="capability-index" aria-labelledby="capabilities-title">
-            <header>
-              <h3 id="capabilities-title">Capabilities</h3>
-              <p>A practical stack chosen around the product.</p>
-            </header>
-
-            <div className="capability-index__groups">
-              {capabilityGroups.map((group) => (
-                <article key={group.title}>
-                  <h4>{group.title}</h4>
-                  <p>{group.skills.join(", ")}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
+const companyName = (name: string) => name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const PROFESSIONAL_START = Date.UTC(2024, 7, 1); // First full-time role: August 2024.
+const getExperienceYears = () => {
+  const today = new Date();
+  const elapsedDays = (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - PROFESSIONAL_START) / 86_400_000;
+  return (Math.max(0, elapsedDays) / 365.2425).toFixed(1);
 };
 
-export default Skills;
+export default function Skills() {
+  const [open, setOpen] = useState<string | null>(EXPERIENCES[0].id);
+  const [experienceYears, setExperienceYears] = useState(getExperienceYears);
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    const timer = window.setInterval(() => setExperienceYears(getExperienceYears()), 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return (
+    <SectionFrame className="folio-experience">
+      <div className="folio-container">
+        <div className="folio-section-top" data-reveal><SectionLabel number="03">Experience & craft</SectionLabel><a className="folio-text-link" href="/Jothivasan_FullStackDeveloper_Resume.pdf" target="_blank" rel="noreferrer">View résumé <ArrowUpRight aria-hidden="true" /></a></div>
+        <div className="experience-composition">
+          <header className="experience-intro" data-reveal><h2 className="folio-title">Learning.<br />Building.<br /><span>Making an impact.</span></h2><p className="folio-body">Growing through real products, real teams, and problems worth figuring out.</p><div className="experience-range"><span className="folio-mono">THE JOURNEY SO FAR</span><strong>2023 <span aria-hidden="true">—</span> Now</strong><div className="experience-range__tenure"><strong>{experienceYears}</strong><span>years<small>of professional experience</small></span></div></div></header>
+          <div className="experience-timeline" aria-label="Career history">
+            {EXPERIENCES.map((experience, index) => {
+              const expanded = open === experience.id;
+              return <article className={`experience-entry ${expanded ? "is-open" : ""}`} key={experience.id} data-reveal>
+                <span className="experience-entry__dot" aria-hidden="true" />
+                <h3><button id={`career-toggle-${experience.id}`} className="experience-entry__toggle" type="button" aria-expanded={expanded} aria-controls={`career-panel-${experience.id}`} onClick={() => setOpen(expanded ? null : experience.id)}>
+                  <span><span className="folio-mono">{experience.period}{index === 0 && <span className="experience-current">Current</span>}</span><strong>{companyName(experience.company)}</strong><span className="experience-entry__role">{experience.role}</span></span>
+                  <span className="experience-entry__plus"><Plus size={20} aria-hidden="true" /></span>
+                </button></h3>
+                <div id={`career-panel-${experience.id}`} role="region" aria-labelledby={`career-toggle-${experience.id}`}>
+                  <AnimatePresence initial={false}>
+                    {expanded && <motion.div className="experience-entry__expand" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduced ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}>
+                      <div className="experience-impact"><strong>{impacts[index].value}</strong><div><span>{impacts[index].label}</span><small>{impacts[index].detail}</small></div></div>
+                      <ul>{experience.description.map(item => <li key={item}>{item}</li>)}</ul>
+                    </motion.div>}
+                  </AnimatePresence>
+                </div>
+              </article>;
+            })}
+          </div>
+        </div>
+        <div className="capabilities-heading" data-reveal><h3>The tools behind the work.</h3><span className="folio-mono">A practical, evolving toolkit</span></div>
+        <ToolkitCards />
+      </div>
+    </SectionFrame>
+  );
+}

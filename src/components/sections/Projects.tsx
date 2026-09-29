@@ -1,172 +1,43 @@
-import * as React from "react";
 import { useState } from "react";
-import { ArrowUpRight, CaretDown } from "@phosphor-icons/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { ArrowUpRight, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import SectionFrame, { SectionLabel } from "../common/SectionFrame";
 import { PROJECTS } from "../../data/projects";
 
-const Projects: React.FC = () => {
+export default function Projects() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const reduceMotion = useReducedMotion();
-  const activeProject = PROJECTS[activeIndex];
-
-  const selectProjectFromKeyboard = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ) => {
-    let nextIndex = index;
-
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-      nextIndex = (index + 1) % PROJECTS.length;
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-      nextIndex = (index - 1 + PROJECTS.length) % PROJECTS.length;
-    } else if (event.key === "Home") {
-      nextIndex = 0;
-    } else if (event.key === "End") {
-      nextIndex = PROJECTS.length - 1;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-    setActiveIndex(nextIndex);
-
-    const tabs = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-      '[role="tab"]',
-    );
-    tabs?.[nextIndex]?.focus();
-  };
+  const project = PROJECTS[activeIndex];
+  const projectNumber = String(activeIndex + 1).padStart(2, "0");
+  const projectCount = String(PROJECTS.length).padStart(2, "0");
 
   return (
-    <div className="work-section">
-      <div className="work-section__inner">
-        <header className="work-heading">
-          <h2>Selected work</h2>
-          <p>
-            Production websites shaped around clear journeys, useful interfaces,
-            and dependable delivery.
-          </p>
-        </header>
-
-        <div className="project-workspace">
-          <div className="project-stage">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.figure
-                id={`project-${activeProject.id}`}
-                role="tabpanel"
-                aria-labelledby={`project-tab-${activeProject.id}`}
-                className="project-stage__figure"
-                key={activeProject.id}
-                initial={reduceMotion ? false : { opacity: 0, x: 14 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -10 }}
-                transition={{
-                  duration: reduceMotion ? 0 : 0.32,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <div className="project-stage__media">
-                  <img
-                    src={activeProject.image}
-                    alt={`${activeProject.title} website preview`}
-                    width="1600"
-                    height="900"
-                    loading={activeIndex === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                  />
-                </div>
-
-                <figcaption>
-                  <span>{activeProject.category}</span>
-                  <span>{activeProject.role}</span>
-                </figcaption>
-              </motion.figure>
-            </AnimatePresence>
-          </div>
-
-          <aside className="project-browser" aria-label="Project details">
-            <div
-              className="project-browser__tabs"
-              role="tablist"
-              aria-label="Choose a project"
-            >
-              {PROJECTS.map((project, index) => {
-                const isActive = index === activeIndex;
-
-                return (
-                  <button
-                    id={`project-tab-${project.id}`}
-                    className="project-browser__tab"
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`project-${project.id}`}
-                    tabIndex={isActive ? 0 : -1}
-                    onClick={() => setActiveIndex(index)}
-                    onKeyDown={(event) =>
-                      selectProjectFromKeyboard(event, index)
-                    }
-                    key={project.id}
-                  >
-                    <span className="project-browser__thumb" aria-hidden="true">
-                      <img src={project.image} alt="" width="192" height="108" />
-                    </span>
-                    <span className="project-browser__tab-copy">
-                      <strong>{project.title}</strong>
-                      <small>{project.role}</small>
-                    </span>
-                  </button>
-                );
-              })}
+    <SectionFrame className="folio-work">
+      <div className="folio-container">
+        <div className="folio-section-top" data-reveal><SectionLabel number="02">Selected work</SectionLabel><span className="folio-mono">A few things I’ve put into the world</span></div>
+        <header className="folio-heading-row" data-reveal><h2 className="folio-title">From an idea.<br /><span>Into people’s hands.</span></h2><p className="folio-body">Real products, considered interfaces, and the engineering that brings them together.</p></header>
+        <div className="work-gallery">
+          <article className={`work-card work-card--featured work-card--project-${activeIndex % 3}`} data-reveal>
+            <a className="work-card__visual" href={project.link} target="_blank" rel="noreferrer" aria-label={`Visit ${project.title} (opens in a new tab)`}>
+              <div className="work-card__topline"><span>SELECTED PROJECT / {projectNumber}</span><span>{project.category.split(" · ")[0].toUpperCase()}</span></div>
+              <div className="work-card__screen" data-parallax><div className="work-card__browser" aria-hidden="true"><i /><i /><i /><span>{new URL(project.link).hostname}</span></div><img src={project.image} alt={`${project.title} website`} width="1600" height="900" loading="lazy" decoding="async" /></div>
+              <span className="work-card__visit">View live <ArrowUpRight size={18} aria-hidden="true" /></span>
+            </a>
+            <div className="work-card__content">
+              <div className="work-card__heading"><div><p className="folio-mono">{project.category}</p><h3><a href={project.link} target="_blank" rel="noreferrer">{project.title}<ArrowUpRight aria-hidden="true" /></a></h3></div><span className="work-card__index" aria-hidden="true">{projectNumber}</span></div>
+              <p className="folio-body">{project.description}</p>
+              <div className="folio-tags" aria-label="Technologies">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+              <section className="work-contribution" aria-label="Behind the build"><h4>Behind the build</h4><p className="folio-mono">{project.role}</p><ul>{project.responsibilities.map(item => <li key={item}>{item}</li>)}</ul></section>
             </div>
-
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                className="project-browser__detail"
-                key={activeProject.id}
-                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-                transition={{
-                  duration: reduceMotion ? 0 : 0.28,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <h3>{activeProject.title}</h3>
-                <p>{activeProject.description}</p>
-
-                <p className="project-browser__stack">
-                  <strong>Built with</strong>
-                  <span>{activeProject.tags.join(", ")}</span>
-                </p>
-
-                <details className="project-contribution">
-                  <summary>
-                    Contribution
-                    <CaretDown size={16} weight="bold" aria-hidden="true" />
-                  </summary>
-                  <ul>
-                    {activeProject.responsibilities.map((responsibility) => (
-                      <li key={responsibility}>{responsibility}</li>
-                    ))}
-                  </ul>
-                </details>
-
-                <a
-                  className="project-browser__link"
-                  href={activeProject.link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View live project
-                  <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
-                </a>
-              </motion.div>
-            </AnimatePresence>
-          </aside>
+          </article>
         </div>
+        {PROJECTS.length > 1 && <nav className="work-pagination" aria-label="Project navigation">
+          <p className="work-pagination__count" role="status" aria-live="polite" aria-atomic="true" aria-label={`Project ${activeIndex + 1} of ${PROJECTS.length}: ${project.title}`}><strong>{projectNumber}</strong><span aria-hidden="true"> / {projectCount}</span></p>
+          <div className="work-pagination__buttons">
+            <button type="button" onClick={() => setActiveIndex(index => index - 1)} disabled={activeIndex === 0} aria-label="Previous project"><CaretLeft size={26} aria-hidden="true" /></button>
+            <button type="button" onClick={() => setActiveIndex(index => index + 1)} disabled={activeIndex === PROJECTS.length - 1} aria-label="Next project"><CaretRight size={26} aria-hidden="true" /></button>
+          </div>
+        </nav>}
+        <div className="work-endnote" data-reveal><span className="folio-status"><i />Always building, always learning.</span><a className="folio-text-link" href="https://github.com/jothivasan" target="_blank" rel="noreferrer">Follow the work on GitHub <ArrowUpRight aria-hidden="true" /></a></div>
       </div>
-    </div>
+    </SectionFrame>
   );
-};
-
-export default Projects;
+}

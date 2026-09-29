@@ -56,6 +56,8 @@ const Analytics = () => {
         capturePortfolioEvent("portfolio_project_opened", { href, label });
       } else if (href.includes("blogs.jothivasan.dev")) {
         capturePortfolioEvent("portfolio_blog_opened", { href, label });
+      } else if (href === "/contact") {
+        capturePortfolioEvent("portfolio_contact_intent", { method: "form", label });
       } else if (href.startsWith("mailto:") || href.startsWith("tel:")) {
         capturePortfolioEvent("portfolio_contact_intent", {
           method: href.startsWith("mailto:") ? "email" : "phone",

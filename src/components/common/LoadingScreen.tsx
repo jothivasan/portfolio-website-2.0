@@ -1,104 +1,145 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import "../../styles/loading-screen.css";
+
+gsap.registerPlugin(useGSAP);
 
 interface LoadingScreenProps {
+  onReveal: () => void;
   onComplete: () => void;
 }
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
-  const [progress, setProgress] = useState(0);
-  const [isExiting, setIsExiting] = useState(false);
+const fragments = [
+  { viewBox: "0 0 80 80", x: -42, y: -30, rotation: -18 },
+  { viewBox: "80 0 80 80", x: 35, y: -38, rotation: 14 },
+  { viewBox: "0 80 80 80", x: -30, y: 38, rotation: 12 },
+  { viewBox: "80 80 80 80", x: 42, y: 28, rotation: -16 },
+];
+const starPath = "M80 29V131 M36 54.5L124 105.5 M36 105.5L124 54.5";
 
-  // Hide the initial HTML loader when React mounts
-  useEffect(() => {
-    const initialLoader = document.getElementById("initial-loader");
-    if (initialLoader) {
-      initialLoader.style.opacity = "0";
-      setTimeout(() => {
-        initialLoader.remove();
-      }, 300);
-    }
-  }, []);
+/** A small assembly, not a simulated measure of network progress. */
+export default function LoadingScreen({ onReveal, onComplete }: LoadingScreenProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const skip = useRef<() => void>(() => {});
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            setIsExiting(true);
-            setTimeout(onComplete, 800); // Wait for exit animation
-          }, 500);
-          return 100;
-        }
-        const increment = Math.floor(Math.random() * 5) + 1;
-        return Math.min(prev + increment, 100);
+  useGSAP((_context, contextSafe) => {
+    const element = root.current;
+    if (!element) return;
+    let disposed = false;
+    let exiting = false;
+    let entrance: gsap.core.Timeline | undefined;
+    let restoreFocus = false;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const finish = contextSafe(() => {
+      if (exiting || disposed) return;
+      exiting = true;
+      restoreFocus = element.contains(document.activeElement);
+      entrance?.kill();
+      onReveal();
+      gsap.timeline({
+        onComplete: () => {
+          // Remove the overlay and release the page together.
+          onComplete();
+          if (restoreFocus) requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
+        },
+      })
+        .to(".assembly-loader__composition", { y: -24, opacity: 0, duration: reducedMotion.matches ? 0 : 0.3, ease: "power2.in" })
+        .to(element, { clipPath: "inset(0 0 100% 0)", duration: reducedMotion.matches ? 0 : 0.75, ease: "expo.inOut" }, 0);
+    });
+    skip.current = finish;
+
+    const start = contextSafe(() => {
+      if (disposed || exiting || entrance) return;
+      if (reducedMotion.matches) { finish(); return; }
+      const pieces = element.querySelectorAll(".assembly-loader__fragment");
+      fragments.forEach((fragment, index) => {
+        gsap.set(pieces[index], { x: fragment.x, y: fragment.y, rotation: fragment.rotation, opacity: 0 });
       });
-    }, 50);
+      entrance = gsap.timeline({ onComplete: finish });
+      entrance
+        .fromTo(".assembly-loader__copy > span", { yPercent: 110, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, stagger: 0.09, duration: 0.8, ease: "power4.out" }, 0)
+        .to(pieces, { opacity: 1, duration: 0.35, stagger: 0.07 }, 0.04)
+        .to(pieces, { x: 0, y: 0, rotation: 0, duration: 0.95, stagger: 0.075, ease: "expo.inOut" }, 0.3)
+        .to(".assembly-loader__registration", { opacity: 0, scale: 0.88, duration: 0.45 }, 0.9)
+        // Swap the four clipped star fragments for one identical, whole star.
+        // The lime tiles stay fixed while only the star winds up and spins.
+        .addLabel("assembled", 1.5)
+        .set(".assembly-loader__fragment svg", { visibility: "hidden" }, "assembled")
+        .set(".assembly-loader__star", { autoAlpha: 1 }, "assembled")
+        .to(".assembly-loader__star", { rotation: -12, scale: 0.94, duration: 0.28, ease: "power2.inOut" }, "assembled+=0.12")
+        .addLabel("spin")
+        .to(".assembly-loader__star", { rotation: 360, scale: 1, duration: 1.4, ease: "power3.inOut" })
+        .addLabel("settled")
+        .to(".assembly-loader__status-track", { yPercent: -50, duration: 0.45, ease: "power3.inOut" })
+        .to({}, { duration: 0.35 });
+    });
 
-    return () => clearInterval(timer);
-  }, [onComplete]);
+    // Font readiness is bounded: a slow font must never trap a visitor here.
+    const fontDeadline = window.setTimeout(start, 700);
+    void document.fonts.ready.then(start);
+    const failSafe = window.setTimeout(finish, 6000);
+    const onMotionChange = () => { if (reducedMotion.matches) finish(); };
+    reducedMotion.addEventListener("change", onMotionChange);
+
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") finish(); };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      disposed = true;
+      skip.current = () => {};
+      window.clearTimeout(fontDeadline);
+      window.clearTimeout(failSafe);
+      reducedMotion.removeEventListener("change", onMotionChange);
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, { scope: root });
 
   return (
-    <div
-      className={`fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
-        isExiting
-          ? "opacity-0 scale-110 pointer-events-none"
-          : "opacity-100 scale-100"
-      }`}
-    >
-      <div className="w-full max-w-[280px] flex flex-col items-center">
-        <div className="mb-10 transform transition-transform duration-500 hover:scale-110">
-          <svg
-            width="60"
-            height="69"
-            viewBox="0 0 55 63"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="animate-pulse"
-          >
-            <circle cx="15" cy="48" r="15" fill="#D9D9D9" />
-            <path
-              d="M34 10.5C34 4.70101 38.701 0 44.5 0C50.299 0 55 4.70101 55 10.5V42C55 53.598 45.598 63 34 63V10.5Z"
-              fill="#1DCD9F"
-            />
-          </svg>
-        </div>
-
-        <div className="w-full h-[2px] bg-zinc-900/50 rounded-full overflow-hidden relative backdrop-blur-sm border border-zinc-800/20">
-          <div
-            className="absolute top-0 left-0 h-full bg-[#1DCD9F] transition-all duration-300 ease-out shadow-[0_0_15px_rgba(29,205,159,0.5)]"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[10px] font-black italic tracking-[0.5em] text-zinc-500 uppercase">
-              {progress < 100 ? "INITIALIZING" : "COMPLETE"}
-            </span>
-            <span className="text-xs font-black italic text-white w-8 text-right tabular-nums">
-              {progress}%
-            </span>
-          </div>
-          <div className="flex gap-1.5">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className={`w-1 h-1 rounded-full transition-colors duration-300 ${
-                  progress > (i + 1) * 20 ? "bg-[#1DCD9F]" : "bg-zinc-800"
-                }`}
-              />
+    <div className="assembly-loader" ref={root} aria-label="Welcome to Jothivasan’s portfolio">
+      <header className="assembly-loader__header">
+        <span className="assembly-loader__wordmark">jothivasan<span>*</span></span>
+        <span className="assembly-loader__edition">INDEPENDENT MIND.<br />THOUGHTFUL WORK.</span>
+      </header>
+      <div className="assembly-loader__composition" aria-hidden="true">
+        <div className="assembly-loader__float">
+          <div className="assembly-loader__registration"><i /><i /><i /><i /></div>
+          <div className="assembly-loader__mark">
+            {fragments.map(({ viewBox }, index) => (
+              <div className="assembly-loader__fragment" key={index}>
+                <svg viewBox={viewBox} fill="none">
+                  <path d={starPath} stroke="currentColor" strokeWidth="19" />
+                </svg>
+              </div>
             ))}
+            <div className="assembly-loader__star">
+              <svg viewBox="0 0 160 160" fill="none">
+                <path d={starPath} stroke="currentColor" strokeWidth="19" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <p className="assembly-loader__eyebrow">A LITTLE INTENTION. EVERY DETAIL.</p>
+        <h2 className="assembly-loader__title">
+          <span className="assembly-loader__copy"><span>Thoughtfully</span></span>
+          <span className="assembly-loader__copy assembly-loader__copy--soft"><span>put together.</span></span>
+        </h2>
+        <div className="assembly-loader__status">
+          <span className="assembly-loader__status-dot" />
+          <div className="assembly-loader__status-window">
+            <div className="assembly-loader__status-track"><span>Finding the rhythm</span><span>Everything in place</span></div>
           </div>
         </div>
       </div>
-
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#1DCD9F]/5 blur-[120px] rounded-full" />
-      </div>
+      <p className="visually-hidden" role="status">Preparing the portfolio.</p>
+      <footer className="assembly-loader__footer">
+        <span>DESIGN MEETS DEVELOPMENT</span>
+        <button type="button" onClick={() => skip.current()} aria-label="Skip introduction">Enter portfolio <span aria-hidden="true">↗</span></button>
+      </footer>
     </div>
   );
-};
-
-export default LoadingScreen;
+}

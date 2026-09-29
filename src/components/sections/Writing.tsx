@@ -1,121 +1,30 @@
-import * as React from "react";
+import { ArrowUpRight, ArrowRight } from "@phosphor-icons/react";
+import SectionFrame, { SectionLabel } from "../common/SectionFrame";
 import { BLOG_URL, WRITING_POSTS } from "../../data/writing";
 
-const Arrow = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M7 17 17 7M8 7h9v9" />
-  </svg>
-);
-
-const Writing: React.FC = () => {
-  const featured = WRITING_POSTS.find((post) => post.featured) ?? WRITING_POSTS[0];
-  const recent = WRITING_POSTS.filter((post) => post.slug !== featured.slug);
-
+export default function Writing() {
+  const featured = WRITING_POSTS.find(post => post.featured) ?? WRITING_POSTS[0];
+  const recent = WRITING_POSTS.filter(post => post.slug !== featured.slug);
   return (
-    <div className="writing-section">
-      <div className="writing-section__inner">
-        <header className="writing-heading">
-          <div>
-            <p className="eyebrow">Writing · Field notes</p>
-            <h2>
-              Ideas worth <span>keeping.</span>
-            </h2>
-          </div>
-          <div className="writing-heading__aside">
-            <p>
-              Notes on software, product thinking, learning, and the practical
-              details behind building things that last.
-            </p>
-            <a href={BLOG_URL} target="_blank" rel="noreferrer">
-              Visit the complete blog <Arrow />
+    <SectionFrame className="folio-writing">
+      <div className="folio-container">
+        <div className="folio-section-top" data-reveal><SectionLabel number="04">The open notebook</SectionLabel><span className="folio-mono">Observations from the work</span></div>
+        <header className="folio-heading-row" data-reveal><h2 className="folio-title">A work in progress.<br /><span>A thought on paper.</span></h2><a className="folio-text-link" href={BLOG_URL} target="_blank" rel="noreferrer">All writings <ArrowUpRight aria-hidden="true" /></a></header>
+        <div className="journal-layout">
+          <article className="journal-feature" data-reveal>
+            <a href={`${BLOG_URL}/posts/${featured.slug}`} target="_blank" rel="noreferrer">
+              <div className="journal-feature__top"><span className="folio-mono">FEATURED ESSAY</span><ArrowUpRight size={28} aria-hidden="true" /></div>
+              <div className="journal-feature__quote" aria-hidden="true"><span>Build for</span><span>the next</span><span className="journal-feature__marked">reader.</span><span className="journal-feature__asterisk">✳</span></div>
+              <div className="journal-feature__copy"><span className="folio-mono">{featured.tag} / {featured.readTime}</span><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="journal-feature__footer"><span>{featured.displayDate}</span><span>Read the essay <ArrowRight aria-hidden="true" /></span></div></div>
             </a>
-          </div>
-        </header>
-
-        <a
-          className="featured-writing"
-          href={`${BLOG_URL}/posts/${featured.slug}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <div className="featured-writing__content">
-            <div className="featured-writing__meta">
-              <span>Featured essay</span>
-              <span>{featured.tag}</span>
-            </div>
-            <h3>{featured.title}</h3>
-            <p>{featured.excerpt}</p>
-            <div className="featured-writing__footer">
-              <span>{featured.displayDate}</span>
-              <span>{featured.readTime}</span>
-              <strong>
-                Read essay <Arrow />
-              </strong>
-            </div>
-          </div>
-          <div className="featured-writing__note" aria-hidden="true">
-            <span className="featured-writing__number">01</span>
-            <div>
-              <p>Optimize for the next reader.</p>
-              <span>
-                Clear names, small boundaries, and honest explanations make the
-                next change easier.
-              </span>
-            </div>
-            <i />
-          </div>
-        </a>
-
-        <div className="writing-list">
-          <div className="writing-list__label">
-            <p className="eyebrow">Recent notes</p>
-            <span>{String(recent.length).padStart(2, "0")} published</span>
-          </div>
-          <div>
-            {recent.map((post, index) => (
-              <a
-                className="writing-row"
-                href={`${BLOG_URL}/posts/${post.slug}`}
-                target="_blank"
-                rel="noreferrer"
-                key={post.slug}
-              >
-                <span className="writing-row__number">
-                  {String(index + 2).padStart(2, "0")}
-                </span>
-                <div className="writing-row__copy">
-                  <div>
-                    <span>{post.tag}</span>
-                    <span>{post.displayDate}</span>
-                  </div>
-                  <h3>{post.title}</h3>
-                  <p>{post.excerpt}</p>
-                </div>
-                <div className="writing-row__action">
-                  <span>{post.readTime}</span>
-                  <i><Arrow /></i>
-                </div>
-              </a>
-            ))}
+          </article>
+          <div className="journal-notes">
+            <p className="journal-notes__label folio-mono" data-reveal>RECENT ENTRIES / 02</p>
+            {recent.map((post, index) => <article className="journal-note" key={post.slug} data-reveal><a href={`${BLOG_URL}/posts/${post.slug}`} target="_blank" rel="noreferrer"><div className="journal-note__meta"><span className="folio-mono">0{index + 2} / {post.tag}</span><ArrowUpRight size={22} aria-hidden="true" /></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="journal-note__footer"><span>{post.displayDate}</span><span>{post.readTime}</span></div></a></article>)}
+            <div className="journal-postscript" data-reveal><span aria-hidden="true">↳</span><p>Things I’m learning about software, building, and the space in between. Written to make sense of it all.</p></div>
           </div>
         </div>
-
-        <footer className="writing-footer">
-          <div>
-            <p className="eyebrow">Explore by topic</p>
-            <div className="writing-topics">
-              <a href={`${BLOG_URL}/search?q=engineering`} target="_blank" rel="noreferrer">Engineering</a>
-              <a href={`${BLOG_URL}/search?q=building`} target="_blank" rel="noreferrer">Building</a>
-              <a href={`${BLOG_URL}/search?q=learning`} target="_blank" rel="noreferrer">Learning</a>
-            </div>
-          </div>
-          <a className="writing-footer__all" href={BLOG_URL} target="_blank" rel="noreferrer">
-            All writing <span aria-hidden="true">↗</span>
-          </a>
-        </footer>
       </div>
-    </div>
+    </SectionFrame>
   );
-};
-
-export default Writing;
+}

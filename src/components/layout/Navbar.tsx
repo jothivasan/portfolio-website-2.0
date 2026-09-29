@@ -1,226 +1,193 @@
-import * as React from "react";
-import { useEffect, useRef, useState } from "react";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  List,
-  Moon,
-  Sun,
-  X,
-} from "@phosphor-icons/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
+import { ArrowUpRight, Moon, Sun, X } from "@phosphor-icons/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import "../../styles/intro.css";
 
-type NavbarProps = {
-  theme: "light" | "dark";
-  onToggleTheme: () => void;
-};
-
+type NavbarProps = { isContactPage: boolean; theme: "light" | "dark"; onToggleTheme: (button: HTMLButtonElement) => void };
 const navigation = [
+  { label: "About", href: "#about" },
   { label: "Work", href: "#projects" },
   { label: "Experience", href: "#experience" },
-  { label: "About", href: "#about" },
   { label: "Writing", href: "#writing" },
-  { label: "Blog", href: "https://blogs.jothivasan.dev", external: true },
-  { label: "Contact", href: "#contact" },
+  { label: "Contact", href: "/contact" },
 ];
+const sectionIds = ["hero", ...navigation.filter(item => item.href.startsWith("#")).map(item => item.href.slice(1))];
+const isPlainClick = (event: MouseEvent<HTMLAnchorElement>) =>
+  event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
-const sectionIds = ["hero", "projects", "experience", "about", "writing", "contact"];
+export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarProps) {
+  const links = navigation.map(item => ({ ...item, href: isContactPage && item.href.startsWith("#") ? `/${item.href}` : item.href }));
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(isContactPage ? "/contact" : "#hero");
+  const [scrolled, setScrolled] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const pendingDestination = useRef<string | null>(null);
+  const previousOverflow = useRef("");
+  const scrollLocked = useRef(false);
+  const reduced = useReducedMotion();
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", value => setScrolled(value > 24));
 
-const scrollToSection = (
-  event: React.MouseEvent<HTMLAnchorElement>,
-  href: string,
-) => {
-  if (!href.startsWith("#")) return;
-  event.preventDefault();
-  document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
-};
-
-const Navbar: React.FC<NavbarProps> = ({ theme, onToggleTheme }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeHref, setActiveHref] = useState("#hero");
-  const menuRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "";
-    if (isMenuOpen) {
-      window.requestAnimationFrame(() => {
-        menuRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
-      });
+  const finishClose = useCallback(() => {
+    dialogRef.current?.close();
+    if (scrollLocked.current) {
+      document.body.style.overflow = previousOverflow.current;
+      scrollLocked.current = false;
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
-    };
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((section): section is HTMLElement => Boolean(section));
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const current = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (current) setActiveHref(`#${current.target.id}`);
-      },
-      {
-        rootMargin: "-28% 0px -58%",
-        threshold: [0, 0.2, 0.5],
-      },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    const href = pendingDestination.current;
+    pendingDestination.current = null;
+    if (href && !href.startsWith("#")) {
+      window.location.assign(href);
+    } else if (href) {
+      const target = document.getElementById(href.slice(1));
+      if (target) {
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+          block: "start",
+        });
+        if (window.location.hash !== href) window.history.pushState(null, "", href);
+      }
+    } else if (window.matchMedia("(max-width: 850px)").matches) {
+      toggleRef.current?.focus({ preventScroll: true });
+    }
   }, []);
 
-  const closeAndNavigate = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
-  ) => {
-    scrollToSection(event, href);
-    if (href.startsWith("#")) setActiveHref(href);
-    setIsMenuOpen(false);
+  useEffect(() => { setScrolled(window.scrollY > 24); }, []);
+
+  useEffect(() => {
+    if (isContactPage) return;
+    const observer = new IntersectionObserver(entries => {
+      const current = entries.filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (current) setActive(`#${current.target.id}`);
+    }, { rootMargin: "-18% 0px -70%", threshold: 0 });
+    const observed = new Set<HTMLElement>();
+    const observeSections = () => {
+      sectionIds.forEach(id => {
+        const section = document.getElementById(id);
+        if (section && !observed.has(section)) {
+          observed.add(section);
+          observer.observe(section);
+        }
+      });
+      if (observed.size === sectionIds.length) mutations.disconnect();
+    };
+    const mutations = new MutationObserver(observeSections);
+    const main = document.getElementById("main-content");
+    if (main) mutations.observe(main, { childList: true, subtree: true });
+    observeSections();
+    return () => { observer.disconnect(); mutations.disconnect(); };
+  }, [isContactPage]);
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 851px)");
+    const closeOnResize = () => {
+      if (desktop.matches && dialogRef.current?.open) {
+        setOpen(false);
+        finishClose();
+      }
+    };
+    desktop.addEventListener("change", closeOnResize);
+    return () => desktop.removeEventListener("change", closeOnResize);
+  }, [finishClose]);
+
+  useEffect(() => () => {
+    if (scrollLocked.current) document.body.style.overflow = previousOverflow.current;
+  }, []);
+
+  const openMenu = () => {
+    if (!dialogRef.current || dialogRef.current.open) return;
+    previousOverflow.current = document.body.style.overflow;
+    dialogRef.current.showModal();
+    scrollLocked.current = true;
+    document.body.style.overflow = "hidden";
+    setOpen(true);
+  };
+  const navigateFromMenu = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!isPlainClick(event)) return;
+    event.preventDefault();
+    pendingDestination.current = href;
+    setActive(href);
+    setOpen(false);
   };
 
   return (
-    <motion.header
-      className={`site-header${isMenuOpen ? " site-header--menu-open" : ""}`}
-      initial={reduceMotion ? false : { y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="site-header__inner">
-        <a
-          className="brand"
-          href="#hero"
-          onClick={(event) => closeAndNavigate(event, "#hero")}
-          aria-label="Jothivasan, home"
-        >
-          <span className="brand__mark" aria-hidden="true">J</span>
-          <span className="brand__label">Jothivasan</span>
-        </a>
-
-        <nav className="desktop-nav" aria-label="Main navigation">
-          {navigation.map((item) => {
-            const isActive = !item.external && activeHref === item.href;
-            return (
-              <a
-                className={isActive ? "desktop-nav__link desktop-nav__link--active" : "desktop-nav__link"}
-                key={item.label}
-                href={item.href}
-                onClick={(event) => closeAndNavigate(event, item.href)}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noreferrer" : undefined}
-                aria-current={isActive ? "location" : undefined}
-              >
+    <>
+      <motion.header
+        className={`editorial-header ${scrolled ? "editorial-header--scrolled" : ""}`}
+        initial={reduced ? false : { opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduced ? 0 : 0.45 }}
+      >
+        <div className="editorial-nav">
+          <a className="editorial-wordmark" href={isContactPage ? "/" : "#hero"} aria-label="Jothivasan, home">
+            jothivasan<span aria-hidden="true">*</span>
+          </a>
+          <nav className="editorial-links" aria-label="Main navigation">
+            {links.map(item => (
+              <a key={item.href} href={item.href} aria-current={active === item.href ? (isContactPage ? "page" : "location") : undefined}>
                 <span>{item.label}</span>
-                {item.external && <ArrowUpRight aria-hidden="true" />}
+                {active === item.href && (
+                  <motion.span className="editorial-active" layoutId="editorial-active-link" aria-hidden="true"
+                    transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }} />
+                )}
               </a>
-            );
-          })}
-        </nav>
-
-        <div className="header-actions">
-          <button
-            className="theme-button"
-            type="button"
-            onClick={onToggleTheme}
-            aria-label={`Use ${theme === "light" ? "dark" : "light"} theme`}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                className="theme-button__icon"
-                key={theme}
-                initial={reduceMotion ? false : { rotate: -28, opacity: 0, scale: 0.72 }}
-                animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                exit={reduceMotion ? { opacity: 0 } : { rotate: 28, opacity: 0, scale: 0.72 }}
-                transition={{ duration: 0.2 }}
-              >
-                {theme === "light" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-              </motion.span>
-            </AnimatePresence>
-          </button>
-          <button
-            className="menu-button"
-            type="button"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-navigation"
-            aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={isMenuOpen ? "close" : "open"}
-                initial={reduceMotion ? false : { rotate: -35, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={reduceMotion ? { opacity: 0 } : { rotate: 35, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-              >
-                {isMenuOpen ? <X aria-hidden="true" /> : <List aria-hidden="true" />}
-              </motion.span>
-            </AnimatePresence>
-          </button>
+            ))}
+          </nav>
+          <div className="editorial-actions">
+            <motion.button className="editorial-theme" type="button" onClick={event => onToggleTheme(event.currentTarget)}
+              aria-label={`Use ${theme === "light" ? "dark" : "light"} theme`}
+              whileTap={reduced ? undefined : { scale: 0.92 }}>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span key={theme} initial={reduced ? false : { rotate: -45, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: reduced ? 0 : 45, opacity: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.15 }}>
+                  {theme === "light" ? <Moon size={18} aria-hidden="true" /> : <Sun size={18} aria-hidden="true" />}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
+            <button ref={toggleRef} className="editorial-menu-toggle" type="button" onClick={openMenu}
+              aria-haspopup="dialog" aria-controls="editorial-mobile-menu" aria-expanded={open}>
+              Menu <span aria-hidden="true"><i /><i /></span>
+            </button>
+          </div>
         </div>
-      </div>
+      </motion.header>
 
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            ref={menuRef}
-            id="mobile-navigation"
-            className="mobile-menu"
-            initial={reduceMotion ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)", opacity: 1 }}
-            animate={{ clipPath: "inset(0 0 0% 0)", opacity: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)", opacity: 1 }}
-            transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="mobile-menu__inner">
+      <dialog id="editorial-mobile-menu" ref={dialogRef} className="editorial-dialog" aria-label="Site navigation"
+        onCancel={event => { event.preventDefault(); setOpen(false); }}>
+        <AnimatePresence onExitComplete={finishClose}>
+          {open && (
+            <motion.div className="editorial-menu-panel" key="menu"
+              initial={reduced ? false : { opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduced ? 0 : -10 }} transition={{ duration: reduced ? 0 : 0.22 }}>
+              <div className="editorial-menu-top">
+                <span className="editorial-wordmark">jothivasan<span aria-hidden="true">*</span></span>
+                <button type="button" onClick={() => setOpen(false)} autoFocus aria-label="Close navigation"><X size={24} aria-hidden="true" /></button>
+              </div>
+              <p className="editorial-menu-label">TAKE A LOOK AROUND</p>
               <nav aria-label="Mobile navigation">
-                {navigation.map((item, index) => (
-                  <motion.a
-                    className={activeHref === item.href ? "mobile-menu__link--active" : undefined}
-                    key={item.label}
-                    href={item.href}
-                    onClick={(event) => closeAndNavigate(event, item.href)}
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noreferrer" : undefined}
-                    initial={reduceMotion ? false : { opacity: 0, x: -28 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: reduceMotion ? 0 : 0.12 + index * 0.055 }}
-                  >
-                    <span>{item.label}</span>
-                    {item.external ? <ArrowUpRight aria-hidden="true" /> : <ArrowDownRight aria-hidden="true" />}
+                {links.map((item, index) => (
+                  <motion.a key={item.href} href={item.href} aria-current={active === item.href ? (isContactPage ? "page" : "location") : undefined}
+                    onClick={event => navigateFromMenu(event, item.href)}
+                    initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: reduced ? 0 : 0.3, delay: reduced ? 0 : index * 0.035 }}>
+                    <span className="editorial-menu-number">0{index + 1}</span><span>{item.label}</span><ArrowUpRight aria-hidden="true" />
                   </motion.a>
                 ))}
               </nav>
-
-              <motion.div
-                className="mobile-menu__footer"
-                initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: reduceMotion ? 0 : 0.42 }}
-              >
-                <a href="/Jothivasan_FullStackDeveloper_Resume.pdf" target="_blank" rel="noreferrer">
-                  Résumé <ArrowUpRight aria-hidden="true" />
-                </a>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+              <div className="editorial-menu-bottom">
+                <p>Good conversations.<br />Great beginnings.</p>
+                <a href="/contact" onClick={event => navigateFromMenu(event, "/contact")}>Say hello <ArrowUpRight aria-hidden="true" /></a>
+                <a href="https://blogs.jothivasan.dev" target="_blank" rel="noreferrer">Visit the blog <ArrowUpRight aria-hidden="true" /></a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </dialog>
+    </>
   );
-};
-
-export default Navbar;
+}

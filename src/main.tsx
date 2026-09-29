@@ -8,6 +8,11 @@ import "@fontsource/space-mono/700.css";
 import App from "./App";
 import "./index.css";
 
+// Preserve bookmarks to the former in-page contact section.
+if (window.location.pathname === "/" && window.location.hash === "#contact") {
+  window.location.replace("/contact");
+}
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");

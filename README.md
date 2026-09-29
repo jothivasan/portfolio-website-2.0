@@ -6,7 +6,7 @@ The personal portfolio website of Jothivasan, a product-minded full-stack develo
 
 - Responsive portfolio layout for desktop and mobile
 - Project showcase with technology tags and project details
-- Experience, skills, and contact sections
+- Experience and skills sections, plus a dedicated `/contact` page
 - GSAP and Motion-powered interactions
 - SEO metadata, Open Graph image, sitemap, and robots configuration
 - Resume download and social/contact links
@@ -25,6 +25,10 @@ npm run dev
 ```
 
 Create a production build with `npm run build` and preview it with `npm run preview`.
+
+The build includes both `dist/index.html` and `dist/contact/index.html`. Serve directory indexes so `/contact` and `/contact/` resolve to the contact document; no SPA rewrite is required on static hosts. Navigation uses native links, including browser Back/Forward and links from Contact back to portfolio sections. Old `/#contact` bookmarks redirect to `/contact`.
+
+Run `node --test tests/contact.test.mjs` for contact delivery checks using mocked requests (no email is sent).
 
 ## Project structure
 

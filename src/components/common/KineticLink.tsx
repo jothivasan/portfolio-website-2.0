@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 
@@ -41,8 +41,27 @@ const KineticLink: React.FC<KineticLinkProps> = ({
   const prefersReducedMotion = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const resetMotion = () => {
+      if (!media.matches || !root.current) return;
+      const fill = root.current.querySelector(".kinetic-button__fill");
+      const label = root.current.querySelector(".kinetic-button__label-track");
+      const icon = root.current.querySelector(".kinetic-button__icon");
+      const targets = [root.current, fill, label, icon].filter(Boolean);
+      gsap.killTweensOf(targets);
+      gsap.set(root.current, { x: 0, y: 0 });
+      gsap.set(fill, { scaleX: 0 });
+      gsap.set(label, { yPercent: 0 });
+      gsap.set(icon, { x: 0, rotate: 0 });
+    };
+    media.addEventListener("change", resetMotion);
+    return () => media.removeEventListener("change", resetMotion);
+  }, []);
+
   const activate = contextSafe((event?: React.PointerEvent<HTMLAnchorElement>) => {
     if (!root.current || prefersReducedMotion()) return;
+    if (event && event.pointerType !== "mouse") return;
 
     const fill = root.current.querySelector<HTMLElement>(".kinetic-button__fill");
     const labelTrack = root.current.querySelector<HTMLElement>(".kinetic-button__label-track");
@@ -81,7 +100,7 @@ const KineticLink: React.FC<KineticLinkProps> = ({
   });
 
   const trackPointer = contextSafe((event: React.PointerEvent<HTMLAnchorElement>) => {
-    if (!root.current || prefersReducedMotion()) return;
+    if (!root.current || prefersReducedMotion() || event.pointerType !== "mouse") return;
     const bounds = root.current.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width - 0.5;
     const y = (event.clientY - bounds.top) / bounds.height - 0.5;
