@@ -32,6 +32,7 @@ const themeScript = `(function(){var t;try{t=localStorage.getItem('jothivasan-th
 export default function RootLayout({ children }: { children: ReactNode }) {
   return <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
     <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
-    <body><SiteShell>{children}</SiteShell></body>
+    {/* Browser extensions can inject body attributes before hydration (e.g. cz-shortcut-listen). */}
+    <body suppressHydrationWarning><SiteShell>{children}</SiteShell></body>
   </html>;
 }
