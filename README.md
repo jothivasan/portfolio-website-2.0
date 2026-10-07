@@ -22,6 +22,12 @@ npm run start
 
 Run `npm run typecheck` for TypeScript validation. With the production server running, `npm run check:production -- http://127.0.0.1:3000` verifies routes, redirects, metadata, section links, form fields, and local assets without submitting messages. Deploy with a Next.js-compatible Node host or Vercel. The production output is `.next/`, not the former Vite `dist/` directory; do not use an SPA fallback or the former static-host configuration. Next handles page requests, redirects, metadata, and local image optimization.
 
+### Vercel deployment
+
+The root `vercel.json` selects the Next.js framework, runs `npm run build`, and resets the output directory to the framework default. This overrides an old `dist` output directory saved in Vercel Project Settings.
+
+If configuring the project through the dashboard, select **Next.js** as the Framework Preset and turn off the **Output Directory** override under **Settings → Build and Deployment**. Keep the Root Directory at the repository root. Deploy a new commit containing `vercel.json` so the updated configuration is applied.
+
 ## Routes
 
 - `/`: Hero, About, Work, Experience, Writing, and Footer
