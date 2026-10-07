@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": "https://jothivasan.dev/contact#page",
+  "url": "https://jothivasan.dev/contact",
+  "name": "Contact Jothivasan",
+  "mainEntity": {
+    "@type": "Person",
+    "@id": "https://jothivasan.dev/#person",
+    "name": "Jothivasan",
+    "email": "mailto:Jothivasan2001@gmail.com",
+    "telephone": "+919994497540"
+  }
+}

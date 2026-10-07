@@ -8,7 +8,8 @@ export type WritingPost = {
   featured?: boolean;
 };
 
-export const WRITING_POSTS: WritingPost[] = [
+// Temporary demo content until the Supabase table schema is provided.
+export const MOCK_WRITING_POSTS: WritingPost[] = [
   {
     slug: "building-software-that-outlives-the-sprint",
     title: "Building software that outlives the sprint",

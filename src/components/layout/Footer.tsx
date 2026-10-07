@@ -1,6 +1,10 @@
+"use client";
+
+import InternalLink, { MotionLink } from "../common/InternalLink";
+import { usePathname } from "next/navigation";
+
 import { ArrowUp, ArrowUpRight, Code, GithubLogo, LinkedinLogo, PenNib } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "motion/react";
-import "../../styles/footer.css";
 
 const navigation = [
   { label: "About", href: "#about" },
@@ -18,6 +22,8 @@ const profiles = [
 ];
 
 export default function Footer() {
+  const isHome = usePathname() === "/";
+  const sectionHref = (href: string) => !isHome && href.startsWith("#") ? `/${href}` : href;
   const reduced = useReducedMotion();
   const year = new Date().getFullYear();
 
@@ -40,7 +46,7 @@ export default function Footer() {
             <span>Let’s make</span>
             something <span className="closing__accent">matter.</span>
           </h2>
-          <motion.a
+          <MotionLink
             className="closing__hello"
             href="/contact"
             aria-label="Say hello — visit the contact page"
@@ -50,7 +56,7 @@ export default function Footer() {
           >
             <ArrowUpRight weight="light" aria-hidden="true" />
             <span>Say hello</span>
-          </motion.a>
+          </MotionLink>
           <div className="closing__message">
             <p>Thoughtful ideas deserve thoughtful execution.<br />Bring yours. Let’s build it together.</p>
           </div>
@@ -58,15 +64,15 @@ export default function Footer() {
 
         <div className="closing__directory">
           <div className="closing__signature">
-            <a className="closing__brand" href="#hero" aria-label="Jothivasan — back to introduction">
+            <InternalLink className="closing__brand" href={sectionHref("#hero")} aria-label="Jothivasan — back to introduction">
               Jothivasan<span aria-hidden="true">*</span>
-            </a>
+            </InternalLink>
             <p>Full Stack Developer.<br />Fast, thoughtful products. Built with intention.</p>
           </div>
           <div className="closing__connections">
             <nav className="closing__navigation" aria-label="Footer navigation">
               {navigation.map((item) => (
-                <a className="closing__link" key={item.label} href={item.href}>{item.label}</a>
+                <InternalLink className="closing__link" key={item.label} href={sectionHref(item.href)}>{item.label}</InternalLink>
               ))}
             </nav>
             <nav className="closing__profiles" aria-label="Find Jothivasan elsewhere">
@@ -90,9 +96,9 @@ export default function Footer() {
           </div>
           <div className="closing__details">
             <a className="closing__link" href="/Jothivasan_FullStackDeveloper_Resume.pdf" target="_blank" rel="noreferrer">Résumé <ArrowUpRight aria-hidden="true" /></a>
-            <a className="closing__link" href="https://blogs.jothivasan.dev/privacy" target="_blank" rel="noreferrer">Privacy <ArrowUpRight aria-hidden="true" /></a>
+            <InternalLink className="closing__link" href="/privacy">Privacy</InternalLink>
           </div>
-          <a className="closing__top" href="#hero"><span>Back to top</span><span className="closing__top-icon"><ArrowUp size={17} aria-hidden="true" /></span></a>
+          <InternalLink className="closing__top" href={isHome ? "#hero" : "#main-content"}><span>Back to top</span><span className="closing__top-icon"><ArrowUp size={17} aria-hidden="true" /></span></InternalLink>
         </div>
       </div>
     </footer>

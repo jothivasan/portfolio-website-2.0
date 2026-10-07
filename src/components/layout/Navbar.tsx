@@ -1,9 +1,13 @@
+"use client";
+
+import InternalLink, { MotionLink } from "../common/InternalLink";
+
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { ArrowUpRight, Moon, Sun, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import "../../styles/intro.css";
 
-type NavbarProps = { isContactPage: boolean; theme: "light" | "dark"; onToggleTheme: (button: HTMLButtonElement) => void };
+type NavbarProps = { isInnerPage: boolean; theme: "light" | "dark"; onToggleTheme: (button: HTMLButtonElement) => void };
 const navigation = [
   { label: "About", href: "#about" },
   { label: "Work", href: "#projects" },
@@ -15,10 +19,12 @@ const sectionIds = ["hero", ...navigation.filter(item => item.href.startsWith("#
 const isPlainClick = (event: MouseEvent<HTMLAnchorElement>) =>
   event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
-export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarProps) {
-  const links = navigation.map(item => ({ ...item, href: isContactPage && item.href.startsWith("#") ? `/${item.href}` : item.href }));
+export default function Navbar({ theme, onToggleTheme, isInnerPage }: NavbarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const links = navigation.map(item => ({ ...item, href: isInnerPage && item.href.startsWith("#") ? `/${item.href}` : item.href }));
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(isContactPage ? "/contact" : "#hero");
+  const [active, setActive] = useState(isInnerPage ? pathname : "#hero");
   const [scrolled, setScrolled] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -38,7 +44,7 @@ export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarPr
     const href = pendingDestination.current;
     pendingDestination.current = null;
     if (href && !href.startsWith("#")) {
-      window.location.assign(href);
+      router.push(href);
     } else if (href) {
       const target = document.getElementById(href.slice(1));
       if (target) {
@@ -53,12 +59,12 @@ export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarPr
     } else if (window.matchMedia("(max-width: 850px)").matches) {
       toggleRef.current?.focus({ preventScroll: true });
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => { setScrolled(window.scrollY > 24); }, []);
 
   useEffect(() => {
-    if (isContactPage) return;
+    if (isInnerPage) return;
     const observer = new IntersectionObserver(entries => {
       const current = entries.filter(entry => entry.isIntersecting)
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -80,7 +86,7 @@ export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarPr
     if (main) mutations.observe(main, { childList: true, subtree: true });
     observeSections();
     return () => { observer.disconnect(); mutations.disconnect(); };
-  }, [isContactPage]);
+  }, [isInnerPage]);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 851px)");
@@ -123,18 +129,18 @@ export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarPr
         transition={{ duration: reduced ? 0 : 0.45 }}
       >
         <div className="editorial-nav">
-          <a className="editorial-wordmark" href={isContactPage ? "/" : "#hero"} aria-label="Jothivasan, home">
+          <InternalLink className="editorial-wordmark" href={isInnerPage ? "/" : "#hero"} aria-label="Jothivasan, home">
             jothivasan<span aria-hidden="true">*</span>
-          </a>
+          </InternalLink>
           <nav className="editorial-links" aria-label="Main navigation">
             {links.map(item => (
-              <a key={item.href} href={item.href} aria-current={active === item.href ? (isContactPage ? "page" : "location") : undefined}>
+              <InternalLink key={item.href} href={item.href} aria-current={active === item.href ? (isInnerPage ? "page" : "location") : undefined}>
                 <span>{item.label}</span>
                 {active === item.href && (
                   <motion.span className="editorial-active" layoutId="editorial-active-link" aria-hidden="true"
                     transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }} />
                 )}
-              </a>
+              </InternalLink>
             ))}
           </nav>
           <div className="editorial-actions">
@@ -171,17 +177,17 @@ export default function Navbar({ theme, onToggleTheme, isContactPage }: NavbarPr
               <p className="editorial-menu-label">TAKE A LOOK AROUND</p>
               <nav aria-label="Mobile navigation">
                 {links.map((item, index) => (
-                  <motion.a key={item.href} href={item.href} aria-current={active === item.href ? (isContactPage ? "page" : "location") : undefined}
+                  <MotionLink key={item.href} href={item.href} aria-current={active === item.href ? (isInnerPage ? "page" : "location") : undefined}
                     onClick={event => navigateFromMenu(event, item.href)}
                     initial={reduced ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: reduced ? 0 : 0.3, delay: reduced ? 0 : index * 0.035 }}>
                     <span className="editorial-menu-number">0{index + 1}</span><span>{item.label}</span><ArrowUpRight aria-hidden="true" />
-                  </motion.a>
+                  </MotionLink>
                 ))}
               </nav>
               <div className="editorial-menu-bottom">
                 <p>Good conversations.<br />Great beginnings.</p>
-                <a href="/contact" onClick={event => navigateFromMenu(event, "/contact")}>Say hello <ArrowUpRight aria-hidden="true" /></a>
+                <InternalLink href="/contact" onClick={event => navigateFromMenu(event, "/contact")}>Say hello <ArrowUpRight aria-hidden="true" /></InternalLink>
                 <a href="https://blogs.jothivasan.dev" target="_blank" rel="noreferrer">Visit the blog <ArrowUpRight aria-hidden="true" /></a>
               </div>
             </motion.div>

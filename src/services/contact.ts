@@ -4,6 +4,7 @@ export const CONTACT_COOLDOWN_MS = 60_000;
 const STORAGE_KEY = "jothivasan-contact-last-submit";
 
 export function readLastSubmission(): number {
+  if (typeof window === "undefined") return 0;
   try {
     const value = Number(window.localStorage.getItem(STORAGE_KEY));
     return Number.isFinite(value) ? value : 0;

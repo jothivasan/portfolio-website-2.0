@@ -15,7 +15,7 @@
   --shadow: 0 30px 80px rgba(23, 25, 21, 0.14);
   --font-body: "DM Sans Variable", "DM Sans", sans-serif;
   --font-heading: "Space Grotesk Variable", "Space Grotesk", sans-serif;
-  --font-mono: "Space Mono", ui-monospace, monospace;
+  --font-mono: "DM Mono", ui-monospace, monospace;
 }
 
 :root[data-theme="dark"] {

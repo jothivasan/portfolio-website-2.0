@@ -1,8 +1,9 @@
+"use client";
+
 import { useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import "../../styles/sections.css";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -43,8 +44,4 @@ export default function SectionFrame({ children, className = "" }: { children: R
     };
   }, { scope: root });
   return <div ref={root} className={`folio-section ${className}`}>{children}</div>;
-}
-
-export function SectionLabel({ number, children }: { number: string; children: ReactNode }) {
-  return <p className="folio-label"><span>{number}</span>{children}</p>;
 }

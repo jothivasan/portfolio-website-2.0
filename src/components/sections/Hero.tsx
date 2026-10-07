@@ -1,9 +1,12 @@
+"use client";
+
+import InternalLink, { MotionLink } from "../common/InternalLink";
+
 import { useRef } from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import "../../styles/intro.css";
 
 gsap.registerPlugin(useGSAP);
 
@@ -13,10 +16,9 @@ const profiles = [
   { label: "Résumé", href: "/Jothivasan_FullStackDeveloper_Resume.pdf" },
 ];
 
-export default function Hero({ ready = true }: { ready?: boolean }) {
+export default function Hero({ ready = true, skipIntro = false }: { ready?: boolean; skipIntro?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
-  const skipIntro = useRef(Boolean(window.location.hash)).current;
 
   useGSAP(() => {
     if (!ready || skipIntro) return;
@@ -31,7 +33,7 @@ export default function Hero({ ready = true }: { ready?: boolean }) {
         .fromTo(".overture-description, .overture-actions, .overture-footer", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.75, stagger: 0.14, clearProps: "opacity,transform" }, 0.7);
     });
     return () => media.revert();
-  }, { scope: root, dependencies: [ready], revertOnUpdate: true });
+  }, { scope: root, dependencies: [ready, skipIntro], revertOnUpdate: true });
 
   return (
     <div className={`overture${ready ? "" : " overture--booting"}`} ref={root}>
@@ -56,7 +58,7 @@ export default function Hero({ ready = true }: { ready?: boolean }) {
         </p>
 
         <div className="overture-actions">
-          <motion.a className="overture-primary" href="#projects"
+          <MotionLink className="overture-primary" href="#projects"
             whileHover={reduced ? undefined : { y: -2 }}
             whileTap={reduced ? undefined : { scale: 0.98 }}>
             <span>View My Work</span>
@@ -64,7 +66,7 @@ export default function Hero({ ready = true }: { ready?: boolean }) {
               whileHover={reduced ? undefined : { rotate: -8, scale: 1.05 }}>
               <ArrowRight weight="bold" />
             </motion.span>
-          </motion.a>
+          </MotionLink>
           <motion.a className="overture-secondary" href="https://blogs.jothivasan.dev"
             target="_blank" rel="noreferrer"
             whileHover={reduced ? undefined : { y: -2 }}
@@ -79,9 +81,9 @@ export default function Hero({ ready = true }: { ready?: boolean }) {
 
         <div className="overture-footer">
           <p className="overture-availability">Chennai, Tamil Nadu, India</p>
-          <a className="overture-scroll" href="#about" aria-label="Scroll to explore">
+          <InternalLink className="overture-scroll" href="#about" aria-label="Scroll to explore">
             <span>SCROLL TO EXPLORE</span><ArrowDown aria-hidden="true" />
-          </a>
+          </InternalLink>
           <nav className="overture-socials" aria-label="Profile links">
             {profiles.map(profile => (
               <a key={profile.label} href={profile.href} target={profile.href.startsWith("http") ? "_blank" : undefined} rel={profile.href.startsWith("http") ? "noreferrer" : undefined}>

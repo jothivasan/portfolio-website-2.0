@@ -1,6 +1,10 @@
+"use client";
+
+import Image from "next/image";
 import { useState } from "react";
 import { ArrowUpRight, CaretLeft, CaretRight } from "@phosphor-icons/react";
-import SectionFrame, { SectionLabel } from "../common/SectionFrame";
+import SectionFrame from "../common/SectionFrame";
+import SectionLabel from "../common/SectionLabel";
 import { PROJECTS } from "../../data/projects";
 
 export default function Projects() {
@@ -18,7 +22,7 @@ export default function Projects() {
           <article className={`work-card work-card--featured work-card--project-${activeIndex % 3}`} data-reveal>
             <a className="work-card__visual" href={project.link} target="_blank" rel="noreferrer" aria-label={`Visit ${project.title} (opens in a new tab)`}>
               <div className="work-card__topline"><span>SELECTED PROJECT / {projectNumber}</span><span>{project.category.split(" · ")[0].toUpperCase()}</span></div>
-              <div className="work-card__screen" data-parallax><div className="work-card__browser" aria-hidden="true"><i /><i /><i /><span>{new URL(project.link).hostname}</span></div><img src={project.image} alt={`${project.title} website`} width="1600" height="900" loading="lazy" decoding="async" /></div>
+              <div className="work-card__screen" data-parallax><div className="work-card__browser" aria-hidden="true"><i /><i /><i /><span>{new URL(project.link).hostname}</span></div><Image src={project.image} alt={`${project.title} website`} width={1600} height={900} sizes="(max-width: 700px) 90vw, (max-width: 1100px) 55vw, 700px" quality={100} /></div>
               <span className="work-card__visit">View live <ArrowUpRight size={18} aria-hidden="true" /></span>
             </a>
             <div className="work-card__content">

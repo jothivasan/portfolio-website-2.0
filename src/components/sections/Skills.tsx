@@ -1,8 +1,12 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Plus } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import SectionFrame, { SectionLabel } from "../common/SectionFrame";
+import SectionFrame from "../common/SectionFrame";
+import SectionLabel from "../common/SectionLabel";
 import { EXPERIENCES } from "../../data";
+import { getExperienceYears } from "../../utils/experience";
 import ToolkitCards from "./ToolkitCards";
 
 const impacts = [
@@ -11,18 +15,13 @@ const impacts = [
   { value: "React", label: "from the foundations", detail: "Interfaces, APIs & responsive systems" },
 ];
 const companyName = (name: string) => name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-const PROFESSIONAL_START = Date.UTC(2024, 7, 1); // First full-time role: August 2024.
-const getExperienceYears = () => {
-  const today = new Date();
-  const elapsedDays = (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - PROFESSIONAL_START) / 86_400_000;
-  return (Math.max(0, elapsedDays) / 365.2425).toFixed(1);
-};
 
-export default function Skills() {
+export default function Skills({ initialExperienceYears }: { initialExperienceYears: string }) {
   const [open, setOpen] = useState<string | null>(EXPERIENCES[0].id);
-  const [experienceYears, setExperienceYears] = useState(getExperienceYears);
+  const [experienceYears, setExperienceYears] = useState(initialExperienceYears);
   const reduced = useReducedMotion();
   useEffect(() => {
+    setExperienceYears(getExperienceYears());
     const timer = window.setInterval(() => setExperienceYears(getExperienceYears()), 60 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, []);

@@ -1,0 +1,56 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://jothivasan.dev/#person",
+      "name": "Jothivasan",
+      "jobTitle": "Full Stack Developer",
+      "url": "https://jothivasan.dev/",
+      "email": "mailto:Jothivasan2001@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Chennai",
+        "addressCountry": "IN"
+      },
+      "worksFor": {
+        "@type": "Organization",
+        "name": "MuleCraft India"
+      },
+      "sameAs": [
+        "https://linkedin.com/in/jothivasan/",
+        "https://github.com/jothivasan",
+        "https://leetcode.com/u/Jothivasan28/"
+      ],
+      "knowsAbout": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "Node.js",
+        "PostgreSQL",
+        "Supabase",
+        "Design systems",
+        "Web performance"
+      ]
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://jothivasan.dev/#profile",
+      "url": "https://jothivasan.dev/",
+      "name": "Jothivasan | Full Stack Developer",
+      "mainEntity": {
+        "@id": "https://jothivasan.dev/#person"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://jothivasan.dev/#website",
+      "url": "https://jothivasan.dev/",
+      "name": "Jothivasan",
+      "description": "Portfolio of Jothivasan, a Full Stack Developer building fast, thoughtful web products.",
+      "author": {
+        "@id": "https://jothivasan.dev/#person"
+      }
+    }
+  ]
+}

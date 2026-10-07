@@ -1,0 +1,103 @@
+/* About only: open grids, typographic hierarchy, and an integrated systems study. */
+.folio-about .about-topline { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 54px; }
+.about-editorial-hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 72px; align-items: center; }
+.about-editorial-hero__heading { grid-column: 1; }
+.folio-about .about-role { margin-bottom: 24px; font-size: 14px; font-weight: 600; line-height: 1.7; }
+.about-role > span { color: var(--ink-soft); font-weight: 400; }
+.folio-about .about-editorial-hero .folio-title { font-size: clamp(2.6rem, 4.2vw, 4.1rem); text-wrap: initial; }
+.about-editorial-hero__intro { grid-column: 1; margin-top: 28px; max-width: 490px; }
+.about-editorial-hero__intro > p:first-child { margin-bottom: 18px; font-size: 20px; line-height: 1.6; letter-spacing: -.025em; }
+.about-editorial-hero__intro .folio-body { margin-bottom: 22px; }
+.folio-about .folio-text-link { transition: border-color 250ms ease; }
+.folio-about .folio-text-link:hover { border-color: var(--ink); }
+.about-system { grid-column: 2; grid-row: 1 / span 2; min-width: 0; margin: 0; }
+.about-system__drawing { position: relative; width: 100%; aspect-ratio: 480 / 340; }
+.about-system svg { width: 100%; height: 100%; overflow: visible; }
+.about-system__guide { stroke: var(--line); stroke-dasharray: 3 7; }
+.about-system__orbit { stroke: var(--ink); stroke-opacity: .24; stroke-width: 1; transition: stroke-opacity 400ms ease; }
+.about-system:hover .about-system__orbit { stroke-opacity: .5; }
+.about-system__accent { stroke: var(--lime); stroke-width: 5; }
+.about-system__node { fill: var(--ink); }
+.about-system__core { fill: var(--lime); }
+.about-system__centre { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #171915; font: 500 clamp(16px, 1.6vw, 22px)/1.15 var(--font-heading); letter-spacing: -.04em; }
+.about-system__label { position: absolute; padding: 4px 8px; background: var(--paper); color: var(--ink-soft); font: 12px/1.6 var(--font-mono); white-space: nowrap; }
+.about-system__label--top { top: 0; left: 50%; transform: translateX(-50%); }
+.about-system__label--left { top: 50%; left: 0; transform: translateY(-50%); }
+.about-system__label--right { top: 50%; right: 0; transform: translateY(-50%); }
+.about-system__label--bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+.about-snapshot { margin-top: 64px; border-block: 1px solid var(--line); }
+.about-snapshot dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.about-snapshot dl > div { padding: 28px 24px; }
+.about-snapshot dl > div:first-child { padding-left: 0; }
+.about-snapshot dl > div + div { border-left: 1px solid var(--line); }
+.about-snapshot dt { margin-bottom: 18px; }
+.about-snapshot dd { margin: 0; font: 500 21px/1.3 var(--font-heading); letter-spacing: -.04em; }
+.about-snapshot dd > span { display: block; margin-top: 10px; color: var(--ink-soft); font: 13px/1.65 var(--font-body); letter-spacing: 0; }
+.about-practice, .about-personal { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); gap: 80px; margin-top: 96px; }
+.folio-about :is(.about-practice, .about-personal) h3 { margin-bottom: 22px; font: 500 clamp(1.9rem, 3vw, 2.7rem)/1.15 var(--font-heading); letter-spacing: -.055em; }
+.folio-about h3 > span { color: var(--ink-soft); }
+.about-practice header > .folio-body { max-width: 240px; }
+.about-practice header > .folio-mono, .about-personal .folio-mono { margin-bottom: 28px; }
+.about-practice__item { display: grid; grid-template-columns: 34px minmax(130px, .8fr) minmax(0, 1.2fr); align-items: baseline; gap: 20px; padding: 26px 0; border-top: 1px solid var(--line); }
+.about-practice__item:last-child { border-bottom: 1px solid var(--line); }
+.about-practice__item > .folio-mono { transition: color 250ms ease; }
+.about-practice__item:hover > .folio-mono { color: var(--ink); }
+.folio-about .about-practice__item h4 { margin: 0; font: 500 20px/1.3 var(--font-heading); letter-spacing: -.035em; }
+.folio-about .about-practice__item p { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.75; }
+.about-personal { border-top: 1px solid var(--line); padding-top: 56px; }
+.about-personal__copy { max-width: 570px; }
+.about-personal__copy > p { color: var(--ink-soft); font-size: 16px; line-height: 1.8; }
+.about-personal__copy > p:first-child { color: var(--ink); font-size: 20px; letter-spacing: -.025em; line-height: 1.6; }
+@media (max-width: 1100px) {
+  .about-editorial-hero { column-gap: 36px; }
+  .about-practice, .about-personal { gap: 40px; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); }
+  .about-practice__item { grid-template-columns: 30px 1fr; gap: 10px 16px; }
+  .about-practice__item p { grid-column: 2; }
+  .about-snapshot dl > div { padding-inline: 18px; }
+  .about-snapshot dd { font-size: 19px; }
+}
+@media (max-width: 800px) {
+  .folio-about .about-topline { margin-bottom: 36px; }
+  .about-editorial-hero { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .about-editorial-hero__heading { grid-column: 1 / -1; }
+  .folio-about .about-editorial-hero .folio-title { font-size: clamp(2.5rem, 7vw, 3.7rem); }
+  .about-editorial-hero__intro { margin: 0; }
+  .about-editorial-hero__intro > p:first-child { font-size: 18px; }
+  .about-system { grid-row: 2; }
+  .about-snapshot { margin-top: 44px; }
+  .about-snapshot dl { grid-template-columns: 1fr 1fr; }
+  .about-snapshot dl > div { padding: 24px; }
+  .about-snapshot dl > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .about-snapshot dl > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .about-practice, .about-personal { margin-top: 64px; }
+}
+@media (max-width: 560px) {
+  .about-topline > .folio-mono { font-size: 12px; }
+  .about-role > span { display: block; }
+  .folio-about .about-role { margin-bottom: 20px; }
+  .about-editorial-hero { grid-template-columns: 1fr; gap: 24px; }
+  .folio-about .about-editorial-hero .folio-title { font-size: clamp(2rem, 8.4vw, 3rem); }
+  .about-editorial-hero__intro { grid-column: 1; }
+  .about-system { grid-column: 1; grid-row: auto; margin-top: 12px; }
+  .about-system__drawing { aspect-ratio: 1; }
+  .about-system__label { padding: 2px 4px; }
+  .about-system__label--top { top: 10%; }
+  .about-system__label--bottom { bottom: 10%; }
+  .about-system__centre { font-size: 14px; }
+  .about-snapshot { margin-top: 30px; }
+  .about-snapshot dl > div { padding: 22px 0 22px 16px; }
+  .about-snapshot dt { margin-bottom: 12px; }
+  .about-snapshot dd { font-size: 18px; }
+  .about-snapshot dd > span { font-size: 12px; padding-right: 10px; }
+  .about-practice, .about-personal { grid-template-columns: 1fr; gap: 24px; margin-top: 56px; }
+  .about-practice header > .folio-body { max-width: 280px; margin-bottom: 0; }
+  .about-practice header > .folio-mono, .about-personal .folio-mono { margin-bottom: 20px; }
+  .about-practice__item { grid-template-columns: 30px 1fr; padding: 22px 0; }
+  .about-personal { padding-top: 36px; gap: 0; }
+}
+@media (max-width: 380px) {
+  .about-system { grid-template-columns: 1fr; gap: 0; }
+  .about-system__drawing { aspect-ratio: 480 / 340; }
+  .about-system__label--top { top: 0; }
+  .about-system__label--bottom { bottom: 0; }
+}

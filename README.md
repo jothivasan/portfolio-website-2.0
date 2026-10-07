@@ -1,40 +1,62 @@
 # Jothivasan Portfolio
 
-The personal portfolio website of Jothivasan, a product-minded full-stack developer. It presents selected work, technical skills, experience, and contact details through a responsive, motion-led interface.
+Jothivasan’s portfolio, built with Next.js App Router, React, TypeScript, Tailwind CSS, GSAP, and Motion. The existing interface, fonts, responsive styles, and theme-reveal animation are retained.
 
-## Highlights
+## Local development
 
-- Responsive portfolio layout for desktop and mobile
-- Project showcase with technology tags and project details
-- Experience and skills sections, plus a dedicated `/contact` page
-- GSAP and Motion-powered interactions
-- SEO metadata, Open Graph image, sitemap, and robots configuration
-- Resume download and social/contact links
-
-## Tech stack
-
-React 19, TypeScript, Vite, Tailwind CSS, GSAP, Motion, Phosphor Icons, and PostHog.
-
-## Run locally
-
-Requirements: Node.js 18 or later.
+Requires Node.js 20.9 or newer.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Create a production build with `npm run build` and preview it with `npm run preview`.
+Open http://localhost:3000. Copy `.env.example` to `.env.local` when you are ready to configure Supabase for writing content. The portfolio has no analytics tracking.
 
-The build includes both `dist/index.html` and `dist/contact/index.html`. Serve directory indexes so `/contact` and `/contact/` resolve to the contact document; no SPA rewrite is required on static hosts. Navigation uses native links, including browser Back/Forward and links from Contact back to portfolio sections. Old `/#contact` bookmarks redirect to `/contact`.
+## Production
 
+```bash
+npm run build
+npm run start
+```
 
-## Project structure
+Run `npm run typecheck` for TypeScript validation. With the production server running, `npm run check:production -- http://127.0.0.1:3000` verifies routes, redirects, metadata, section links, form fields, and local assets without submitting messages. Deploy with a Next.js-compatible Node host or Vercel. The production output is `.next/`, not the former Vite `dist/` directory; do not use an SPA fallback or the former static-host configuration. Next handles page requests, redirects, metadata, and local image optimization.
 
-- `src/` – application components, styles, and entry points
-- `public/` – resume, logo, Open Graph image, sitemap, and robots file
-- `index.html` – document metadata and structured SEO information
+## Routes
+
+- `/`: Hero, About, Work, Experience, Writing, and Footer
+- `/contact`: Contact information and the existing Web3Forms contact form
+- `/privacy`: Portfolio privacy policy, shared navigation/footer, and contact data handling
+- `/#about`, `/#projects`, `/#experience`, `/#writing`, `/#hero`: Section bookmarks
+- `/#contact`: Redirects to `/contact` in the client (URL fragments are not sent to servers)
+- `/contact/`, `/contact/index.html`, `/index.html`: Redirect to canonical routes
+- Public assets, résumé, `/robots.txt`, and `/sitemap.xml` retain their URLs
+
+Internal navigation uses `next/link`, with the existing smooth section scrolling and mobile-menu exit animation. Refreshing either page serves its own HTML and metadata. Saved/system themes are applied before hydration, and toggling retains the existing GSAP view-transition reveal and reduced-motion fallback.
+
+## Structure
+
+- `src/app/`: Server-rendered routes, root layout, metadata, and shared style imports
+- `src/components/layout/SiteShell.tsx`: Client-side theme and intro lifecycle
+- `src/components/`: Existing sections, navigation, footer, and animation components
+- `src/components/contact/`: Existing form, validation, clipboard, and feedback behavior
+- `src/styles/` and `src/index.css`: Original styling and breakpoints
+- `src/lib/`: Page metadata helper and preserved JSON-LD
+- `src/assets/`: Project images imported by `next/image`
+- `public/`: Résumé, logo, Open Graph image, sitemap, and robots file
+
+The Contact form continues to send directly to Web3Forms; no new backend or mail credentials are required. Its cooldown, spam checks, timeout, and error recovery are unchanged.
+
+Privacy policy copy and its reviewed date live in `src/data/privacy.ts`. Update them when form delivery, content services, email handling, or retention practices change; confirm inbox retention and production hosting details before adding specific claims.
 
 ## License
 
 Released under the MIT License. See [LICENSE](LICENSE).
+
+## Future Supabase writing content
+
+The official `@supabase/supabase-js` client is installed. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local` using your project URL and publishable key. `src/lib/supabase.ts` creates a client only when both values exist, without auth/session persistence. No table is queried yet.
+
+`src/services/writing.ts` is the writing section’s async data source. It currently returns the explicitly named `MOCK_WRITING_POSTS` to keep the layout working. Once the table details are available, replace that return with the real query and map its rows to the existing `WritingPost` type. Add generated database types and published-post filtering for the actual schema; configure public read access with row-level security. Do not use a secret or service-role key in public environment variables.
+
+Review the privacy policy when Supabase fetching is enabled. It is not currently listed as an active data processor because the portfolio makes no Supabase requests yet.

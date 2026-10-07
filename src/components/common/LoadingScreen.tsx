@@ -1,7 +1,8 @@
+"use client";
+
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import "../../styles/loading-screen.css";
 
 gsap.registerPlugin(useGSAP);
 
@@ -25,7 +26,7 @@ export default function LoadingScreen({ onReveal, onComplete }: LoadingScreenPro
 
   useGSAP((_context, contextSafe) => {
     const element = root.current;
-    if (!element) return;
+    if (!element || !contextSafe) return;
     let disposed = false;
     let exiting = false;
     let entrance: gsap.core.Timeline | undefined;
